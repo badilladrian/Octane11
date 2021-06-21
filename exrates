@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+
+docker build -q -t exchanges:local . 1>/dev/null
+docker run --rm -it -v $(pwd):/app exchanges:local $@
