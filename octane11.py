@@ -31,16 +31,15 @@ def history(start, end, base, symbol, output):
         with open(output, "w") as file_pointer:
             file_pointer.write("\n".join(entries))
     else:
-        for entry in entries:
-            print(entry)
+        return entries
 
 
 def convert(date, base, symbol, amount):
     """currency conversion"""
     payload = {"amount": amount, "from": base, "to": symbol}
     response = requests.get(f"{BASE_URL}/{date}", params=payload)
-
-    print(response.json().get("rates").get(symbol))
+    print("response: ", response.json())
+    return response.json().get("rates").get(symbol)
 
 
 if __name__ == "__main__":
@@ -89,7 +88,9 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    result = ""
     if args.command == "history":
-        history(args.start, args.end, args.base, args.symbol, args.output)
+        result = history(args.start, args.end, args.base, args.symbol, args.output)
     if args.command == "convert":
-        convert(args.date, args.base, args.symbol, args.amount)
+        result = convert(args.date, args.base, args.symbol, args.amount)
+    print(result)
