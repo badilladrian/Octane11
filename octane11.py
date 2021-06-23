@@ -3,18 +3,37 @@ for a base currency and multiple other currencies """
 import argparse
 import datetime
 import json
+import logging
 
 import requests
 
 TODAY = datetime.date.today().isoformat()
 BASE_URL = "https://api.frankfurter.app"
 
+def config_logger(handler, filename=""):
+    """ configures a logger """
+    if handler == "FileHandler":
+        _handler = getattr(logging, handler)(filename, "w")
+    if handler == "StreamHandler":
+        _handler = getattr(logging, handler)()
+    _handler.setFormatter(logging.Formatter("%(message)s"))
+    _logger = logging.getLogger(f"{__name__}-{handler}")
+    _logger.addHandler(_handler)
+    _logger.setLevel(logging.INFO)
+    return _logger
+
+STREAM_LOGGER = config_logger("StreamHandler")
+
 
 def history(start, end, base, symbol, output):
     """pulls historical exchange conversions in a date range for
     a base currency and multiple other currencies"""
     payload = {"from": base, "to": ",".join(symbol)}
-    response = requests.get(f"{BASE_URL}/{start}..{end}", params=payload)
+    try:
+        response = requests.get(f"{BASE_URL}/{start}..{end}", params=payload)
+    except RequestException as exception:
+        STREAM_LOGGER.error(exception)
+        return
     rates = response.json().get("rates")
     entries = []
     for _date in rates:
@@ -27,19 +46,22 @@ def history(start, end, base, symbol, output):
             }
             entries.append(json.dumps(entry))
 
+    to_string = lambda e: "\n".join(entries)
     if len(output):
-        with open(output, "w") as file_pointer:
-            file_pointer.write("\n".join(entries))
+        FILE_LOGGER = config_logger("FileHandler", output)
+        FILE_LOGGER.info(to_string(entries))
     else:
-        return entries
+        STREAM_LOGGER.info(to_string(entries))
+    return entries
 
 
 def convert(date, base, symbol, amount):
     """currency conversion"""
     payload = {"amount": amount, "from": base, "to": symbol}
     response = requests.get(f"{BASE_URL}/{date}", params=payload)
-    print("response: ", response.json())
-    return response.json().get("rates").get(symbol)
+    result = response.json().get("rates").get(symbol)
+    STREAM_LOGGER.info(result)
+    return result
 
 
 if __name__ == "__main__":
@@ -90,7 +112,6 @@ if __name__ == "__main__":
 
     result = ""
     if args.command == "history":
-        result = history(args.start, args.end, args.base, args.symbol, args.output)
+        history(args.start, args.end, args.base, args.symbol, args.output)
     if args.command == "convert":
-        result = convert(args.date, args.base, args.symbol, args.amount)
-    print(result)
+        convert(args.date, args.base, args.symbol, args.amount)
