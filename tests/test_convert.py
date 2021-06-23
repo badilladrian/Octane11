@@ -14,15 +14,10 @@ import pytest
 def convert_api_response():
     class Response:
         def json(self):
-            return {
-                "amount": 50.0,
-                "base": "USD",
-                "date": "2021-02-01",
-                "rates": {
-                    "EUR": 41.377
-                }
-            }
+            return {"amount": 50.0, "base": "USD", "date": "2021-02-01", "rates": {"EUR": 41.377}}
+
     return Response()
+
 
 def test_convert(convert_api_response, monkeypatch):
     monkeypatch.setattr(requests, "get", lambda url, params: convert_api_response)

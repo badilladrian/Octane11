@@ -20,17 +20,13 @@ def history_api_response():
                 "start_date": "2021-02-01",
                 "end_date": "2021-02-02",
                 "rates": {
-                    "2021-02-01": {
-                        "CAD": 1.2805,
-                        "EUR": 0.82754
-                    },
-                    "2021-02-02": {
-                        "CAD": 1.2805,
-                        "EUR": 0.83029
-                    }
-                }
+                    "2021-02-01": {"CAD": 1.2805, "EUR": 0.82754},
+                    "2021-02-02": {"CAD": 1.2805, "EUR": 0.83029},
+                },
             }
+
     return Response()
+
 
 def test_history(history_api_response, monkeypatch):
     monkeypatch.setattr(requests, "get", lambda url, params: history_api_response)
