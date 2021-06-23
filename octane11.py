@@ -33,9 +33,9 @@ def history(start, end, base, symbol, output):
     payload = {"from": base, "to": ",".join(symbol)}
     try:
         response = requests.get(f"{BASE_URL}/{start}..{end}", params=payload)
-    except RequestException as exception:
+    except requests.RequestException as exception:
         STREAM_LOGGER.error(exception)
-        return
+        return []
     rates = response.json().get("rates")
     entries = []
     for _date in rates:
@@ -50,8 +50,8 @@ def history(start, end, base, symbol, output):
 
     to_string = lambda e: "\n".join(entries)
     if len(output):
-        FILE_LOGGER = config_logger("FileHandler", output)
-        FILE_LOGGER.info(to_string(entries))
+        file_logger = config_logger("FileHandler", output)
+        file_logger.info(to_string(entries))
     else:
         STREAM_LOGGER.info(to_string(entries))
     return entries
@@ -94,7 +94,6 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    result = ""
     if args.command == "history":
         history(args.start, args.end, args.base, args.symbol, args.output)
     if args.command == "convert":

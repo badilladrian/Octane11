@@ -1,17 +1,19 @@
+"""Test cases for history command"""
 import json
 import os
 import sys
 from pathlib import Path
+import pytest
 
 from octane11 import history, requests
 
 sys.path.append(os.path.join(Path(__file__).resolve().parent))
 
-import pytest
 
 
 @pytest.fixture()
 def history_api_response():
+    """Mock object for request responses"""
     class Response:
         def json(self):
             return {
@@ -29,6 +31,7 @@ def history_api_response():
 
 
 def test_history(history_api_response, monkeypatch):
+    """sucessful scenario for history command"""
     monkeypatch.setattr(requests, "get", lambda url, params: history_api_response)
 
     start = "2021-02-01"
